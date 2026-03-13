@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  name        String?
+  externalId  String?      @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  password    String?
+  auditLogs   AuditLog[]
+  memberships Membership[]
+}
+
+model Workspace {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  auditLogs   AuditLog[]
+  dashboards  Dashboard[]
+  datasets    Dataset[]
+  jobs        JobRun[]
+  memberships Membership[]
+}
+
+model Membership {
+  id          String        @id @default(cuid())
+  role        WorkspaceRole
+  createdAt   DateTime      @default(now())
+  userId      String
+  workspaceId String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+}
+
+model Dataset {
+  id          String            @id @default(cuid())
+  name        String
+  sourceType  DatasetSourceType
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  workspaceId String
+  workspace   Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  versions    DatasetVersion[]
+}
+
+model DatasetVersion {
+  id           String       @id @default(cuid())
+  version      Int
+  objectKey    String
+  originalName String?
+  contentType  String?
+  sizeBytes    BigInt?
+  rowCount     Int?
+  columnCount  Int?
+  schemaJson   Json?
+  profileJson  Json?
+  sampleJson   Json?
+  status       String       @default("uploaded")
+  createdAt    DateTime     @default(now())
+  datasetId    String
+  aiAnalyses   AIAnalysis[]
+  charts       Chart[]
+  dataset      Dataset      @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+
+  @@unique([datasetId, version])
+}
+
+model Dashboard {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  workspaceId String
+  config      Json?
+  sourceType  String           @default("csv")
+  isPublic    Boolean          @default(false)
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  charts      DashboardChart[]
+  shareLinks  ShareLink[]
+}
+
+model Chart {
+  id               String           @id @default(cuid())
+  name             String
+  type             String
+  configJson       Json
+  createdAt        DateTime         @default(now())
+  datasetVersionId String
+  datasetVersion   DatasetVersion   @relation(fields: [datasetVersionId], references: [id], onDelete: Cascade)
+  dashboards       DashboardChart[]
+}
+
+model DashboardChart {
+  id          String    @id @default(cuid())
+  order       Int       @default(0)
+  dashboardId String
+  chartId     String
+  chart       Chart     @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  dashboard   Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@unique([dashboardId, chartId])
+}
+
+model AIAnalysis {
+  id               String         @id @default(cuid())
+  createdAt        DateTime       @default(now())
+  prompt           String
+  responseJson     Json
+  model            String
+  tokensIn         Int?
+  tokensOut        Int?
+  datasetVersionId String
+  datasetVersion   DatasetVersion @relation(fields: [datasetVersionId], references: [id], onDelete: Cascade)
+}
+
+model ShareLink {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  dashboardId String
+  dashboard   Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+}
+
+model JobRun {
+  id          String    @id @default(cuid())
+  type        JobType
+  status      JobStatus @default(queued)
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  attempts    Int       @default(0)
+  error       String?
+  logsJson    Json?
+  workspaceId String
+  payloadJson Json?
+  resultJson  Json?
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  workspaceId String
+  userId      String?
+  action      String
+  entityType  String
+  entityId    String?
+  metaJson    Json?
+  user        User?     @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model Annotation {
+  id          String   @id @default(cuid())
+  dashboardId String
+  point       String
+  text        String
+  userName    String   @default("Anonyme")
+  createdAt   DateTime @default(now())
+}
+
+enum WorkspaceRole {
+  owner
+  admin
+  editor
+  viewer
+}
+
+enum DatasetSourceType {
+  upload
+  google_sheets
+  api
+}
+
+enum JobType {
+  PROFILE_DATASET
+  AI_ANALYZE
+  EXPORT_PDF
+}
+
+enum JobStatus {
+  queued
+  running
+  success
+  failed
+}

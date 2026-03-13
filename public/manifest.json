@@ -1,0 +1,10 @@
+{
+    "name": "DataGN — Dashboards Guinée",
+    "short_name": "DataGN",
+    "description": "Plateforme de Dashboarding IA souveraine pour la Guinée.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#050E08",
+    "theme_color": "#EDB025",
+    "orientation": "portrait"
+}

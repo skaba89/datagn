@@ -1,0 +1,456 @@
+{
+    "common": {
+        "loading": "Loading...",
+        "error": "Error",
+        "back": "Back",
+        "save": "Save",
+        "export": "Export",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "search": "Search",
+        "no_data": "No data found",
+        "actions": "Actions",
+        "new_dashboard": "New Dashboard",
+        "save_success": "Dashboard saved!",
+        "save_error": "Error during saving.",
+        "saving": "Saving...",
+        "filters": "Filters",
+        "reset": "Reset",
+        "apply": "Apply"
+    },
+    "nav": {
+        "overview": "Overview",
+        "charts": "Local Analysis",
+        "map": "Guinea Map",
+        "quality": "Data Health",
+        "table": "Raw Data",
+        "kadi": "Kadi AI",
+        "settings": "Settings",
+        "billing": "Billing",
+        "logout": "Logout"
+    },
+    "dashboard": {
+        "add_kpi": "➕ KPI",
+        "alerts": "🔔 Alerts",
+        "kadi_insight": "🤖 Kadi AI Quick Analysis",
+        "kadi_placeholder": "Click to get an intelligent analysis of your data.",
+        "kadi_reload": "🔄 Relaunch analysis",
+        "kadi_error": "Could not generate analysis.",
+        "export_pdf": "Export PDF",
+        "report_title": "Professional Report Generator",
+        "export_pdf_error": "Error during PDF export",
+        "export_csv": "CSV Export",
+        "public": "🌐 Public",
+        "private": "🔒 Private",
+        "public_link": "Public link",
+        "public_link_copied": "Public link copied!",
+        "share_error": "Error during visibility change.",
+        "need_save": "Please save the dashboard first.",
+        "alert_msg": "indicator(s) have exceeded the configured safety thresholds.",
+        "view_details": "VIEW DETAILS",
+        "executive_sum": "Strategic Executive Summary",
+        "page_name_prompt": "New page name:",
+        "topbar": {
+            "name_placeholder": "Name...",
+            "syncing": "Sync...",
+            "live": "LIVE",
+            "menu": "Menu ▾",
+            "settings_title": "Dashboard Settings",
+            "make_public": "Make Public",
+            "make_private": "Make Private",
+            "change_source": "Change source",
+            "reload": "Reload"
+        }
+    },
+    "stats": {
+        "rows": "Rows",
+        "cols": "Columns",
+        "kpis": "Indicators",
+        "source": "Source",
+        "vs_prev": "vs prev. period",
+        "preview_title": "Data Preview (Top 10)"
+    },
+    "charts": {
+        "units": "units",
+        "dist_cat": "Category Distribution",
+        "trend": "Time Trend",
+        "share": "Market Share",
+        "perf": "Performance Comparison"
+    },
+    "table": {
+        "raw_data": "Raw Data",
+        "rows_cols": "{rows} rows · {cols} columns",
+        "partial": "(100 shown of {total})",
+        "export_all": "📥 Export All"
+    },
+    "quality": {
+        "title": "Data Quality Diagnostic",
+        "subtitle": "Automatic analysis of dataset integrity and completeness.",
+        "fill": "Fill",
+        "anomalies": "{count} anomalies detected",
+        "score": "Global Health Score",
+        "score_desc": "The score is calculated based on the average fill rate of all detected columns.",
+        "lines": "lines",
+        "types": {
+            "unknown": "Unknown",
+            "number": "Number",
+            "date": "Date",
+            "text": "Text"
+        }
+    },
+    "map": {
+        "no_geo": "No geographic data detected",
+        "no_geo_desc": "Make sure you have a column containing region names (Conakry, Kindia, Boke, etc.)",
+        "title": "DISTRIBUTION MAP (GUINEA)",
+        "subtitle": "Visualization by administrative region",
+        "ranking": "TOP REGIONS RANKING",
+        "insight_title": "GEO INSIGHT",
+        "insight_desc": "The region of {region} accounts for the majority of activity with {percent}% of the total detected volume."
+    },
+    "filters": {
+        "label": "🔍 Filters:",
+        "to": "to",
+        "placeholder": "Filter by {col}...",
+        "apply": "Apply",
+        "reset": "Reset"
+    },
+    "kpi_editor": {
+        "title": "Create Custom KPI",
+        "name_label": "KPI Name",
+        "name_placeholder": "e.g., Revenue",
+        "col_a": "Column A",
+        "op": "Op",
+        "col_b": "Column B (or value)",
+        "preview": "Preview: ",
+        "add_btn": "Add to Dashboard"
+    },
+    "alert_editor": {
+        "title": "Configure Alert",
+        "label_label": "Alert Label",
+        "label_placeholder": "e.g., Critical threshold",
+        "col_label": "Column to Monitor",
+        "op": "Operator",
+        "threshold": "Threshold and Condition",
+        "color_label": "Alert Color",
+        "add_btn": "Create Alert",
+        "ops": {
+            "lt": "Less than",
+            "gt": "Greater than",
+            "eq": "Equal to"
+        },
+        "logic": "Logic: ",
+        "than": {
+            "lt": "less than",
+            "gt": "greater than",
+            "eq": "equal to"
+        }
+    },
+    "kadi": {
+        "header_title": "Kadi — DataGN AI Assistant",
+        "header_subtitle": "24/7 Support · Analysis · Maintenance",
+        "welcome": "Hello! I am Kadi 🤖\n\n✅ {rows} rows loaded\n✅ {kpis} KPIs detected\n\nHow can I help you?",
+        "chat_placeholder": "Ask your question...",
+        "quick_actions": {
+            "analyze": "Analyze my data",
+            "anomalies": "Detect anomalies",
+            "report": "Generate a report",
+            "recommend": "Priority recommendations"
+        },
+        "tabs": {
+            "tickets": "🎫 Tickets",
+            "maintenance": "🔧 Maintenance",
+            "reports": "📄 Reports"
+        },
+        "tickets": {
+            "new": "New Ticket",
+            "placeholder": "Describe your problem...",
+            "solving": "Kadi is solving...",
+            "reply": "✅ Kadi's Reply:"
+        },
+        "maintenance": {
+            "title": "System Status",
+            "auto_monitor": "🤖 Kadi monitors automatically",
+            "items": {
+                "source": "Data Source",
+                "parsing": "Column Parsing",
+                "kpis": "Calculated KPIs",
+                "charts": "Charts",
+                "ia": "Kadi AI",
+                "export": "CSV Export"
+            },
+            "checks": [
+                "Data source connection",
+                "Data quality and freshness",
+                "Indicator anomalies (>20%)",
+                "Column parsing",
+                "Anthropic API available",
+                "Chart performance"
+            ]
+        },
+        "reports": {
+            "org_placeholder": "Organization",
+            "period_placeholder": "Period (e.g., March 2025)",
+            "gen_btn": "📄 Generate Report",
+            "copy_btn": "📋 Copy",
+            "success": "✅ Report generated",
+            "loading": "Kadi is writing...",
+            "types": {
+                "monthly": {
+                    "label": "Monthly Report",
+                    "desc": "KPIs + trends + recommendations"
+                },
+                "alert": {
+                    "label": "Alert Note",
+                    "desc": "Indicators out of threshold"
+                },
+                "donor": {
+                    "label": "Donor Report",
+                    "desc": "Standard UN/OECD format"
+                },
+                "itie": {
+                    "label": "EITI / ESG",
+                    "desc": "Mining & transparency"
+                }
+            }
+        }
+    },
+    "settings": {
+        "title": "⚙️ Workspace Settings",
+        "org_name": "Organization Name",
+        "chart_palette": "Charts Color Palette",
+        "primary_color": "Primary Color (Accent)",
+        "logo_url": "Logo URL (Branding)",
+        "logo_help": "Leave empty to use the default DataGN logo.",
+        "hide_kadi": "Hide Kadi AI assistant on public reports",
+        "save_btn": "Save Changes",
+        "save_success": "Settings saved!",
+        "save_error": "Error during saving.",
+        "loading": "Loading settings...",
+        "palettes": {
+            "vibrant": "Vibrant",
+            "pastel": "Pastel",
+            "cool": "Cool",
+            "trust": "Trust"
+        },
+        "modules_title": "Enabled Modules & Services",
+        "modules_desc": "Enable or disable specific features for your Workspace.",
+        "enable_kadi": "Kadi AI Intelligent Assistant",
+        "enable_map": "Interactive Regional Mapping",
+        "enable_quality": "Data Health Diagnosis",
+        "logo_upload": "Upload a logo (File)",
+        "tab_general": "General",
+        "tab_branding": "Branding",
+        "tab_services": "Modules"
+    },
+    "billing": {
+        "title": "Billing & Plans",
+        "current_title": "Your Current Plan",
+        "renewal": "Renewal on the 1st of next month",
+        "paid": "ACTIVE PAYMENT",
+        "dashboards": "Dashboards",
+        "sources": "Data Sources",
+        "kadi_intelligence": "Kadi AI Intelligence",
+        "upgrade_title": "Change Analytical Dimension",
+        "upgrade_to": "Upgrade to {plan} plan",
+        "up_dashboards": "Up to {count} dashboards",
+        "up_sources": "Up to {count} connected sources",
+        "up_kadi": "Includes Kadi AI smart assistant",
+        "sub_btn": "Subscribe for ${price}/mo",
+        "success": "Congratulations! You are now on the {plan} plan.",
+        "processing": "Processing...",
+        "loading": "Loading billing data...",
+        "active": "ACTIVE",
+        "no": "NO",
+        "unlimited": "UNLIMITED",
+        "off": "OFF",
+        "mo": "/mo",
+        "current_plan": "Current Plan",
+        "upgrade": "Upgrade to plan"
+    },
+    "kadi_float": {
+        "error_conn": "⚠️ Connection unavailable. Write to contact@datagn.com",
+        "quick": {
+            "prices": "Our prices?",
+            "demo": "Free demo",
+            "connect": "Connect my data"
+        },
+        "support_247": "24/7 Support",
+        "welcome": "👋 Hello! I am Kadi, DataGN AI.\n\nWhat would you like to know about our dashboards?",
+        "placeholder": "Your message..."
+    },
+    "onboarding": {
+        "live": "DASHBOARD LIVE",
+        "hero_title": "Connect your data.",
+        "hero_subtitle": "Visualize the impact.",
+        "hero_desc": "Choose your source. The dashboard builds automatically.\nKadi AI analyzes and monitors 24/7.",
+        "sources": {
+            "gsheets": {
+                "label": "Google Sheets",
+                "desc": "Publish your sheet — automatic sync with every field change."
+            },
+            "csv": {
+                "label": "CSV / Excel",
+                "desc": "DHIS2 export, Excel registry or any CSV file. Columns detected automatically."
+            },
+            "kobo": {
+                "label": "KoboToolbox",
+                "desc": "Offline collection on tablets. Submissions visible live on the dashboard."
+            },
+            "api": {
+                "label": "API / Database",
+                "desc": "PostgreSQL, MySQL or REST API. Real-time updates from your system."
+            },
+            "dhis2": {
+                "label": "DHIS2 (Health)",
+                "desc": "Direct connector for public health indicators and DHIS2 reports."
+            }
+        },
+        "trust": [
+            "✓ 2-week deployment",
+            "✓ NGOs · Governments · Mining",
+            "✓ -60% vs international agencies"
+        ],
+        "config": {
+            "back": "← Back",
+            "load_btn": "Load Data →",
+            "loading": "Loading...",
+            "error_empty": "No data found in the source",
+            "csv_drop": "Drop your CSV file here",
+            "csv_help": "CSV or TSV — Max 10 MB",
+            "fields": {
+                "url": "Google Sheets URL",
+                "refresh": "Refresh (sec)",
+                "token": "API Token",
+                "formId": "Form ID",
+                "server": "Server (optional)",
+                "endpoint": "Endpoint URL",
+                "apiKey": "API Key (optional)",
+                "baseUrl": "DHIS2 URL",
+                "username": "Username",
+                "password": "Password",
+                "dataSet": "DataSet ID",
+                "orgUnit": "Org Unit ID",
+                "period": "Period"
+            },
+            "placeholders": {
+                "url": "https://docs.google.com/spreadsheets/d/...",
+                "refresh": "30",
+                "token": "Profile → Security → API Token",
+                "formId": "…/assets/ID_HERE/…",
+                "server": "kf.kobotoolbox.org",
+                "endpoint": "https://your-api.com/data",
+                "apiKey": "Bearer eyJ...",
+                "baseUrl": "https://play.dhis2.org/demo",
+                "username": "admin",
+                "password": "********",
+                "dataSet": "BfMAe6Itzgt",
+                "orgUnit": "Im7HToPbejZ",
+                "period": "2023"
+            },
+            "tips": {
+                "gsheets": {
+                    "title": "📌 How to publish",
+                    "lines": [
+                        "1. File → Share → Publish to web",
+                        "2. Choose \"Sheet\" + \"CSV\" format → Publish",
+                        "3. Copy the URL here"
+                    ]
+                },
+                "kobo": {
+                    "title": "📌 Where to find your credentials",
+                    "lines": [
+                        "Token: ",
+                        "kf.kobotoolbox.org → Profile → Security",
+                        "Form ID in your form's URL"
+                    ]
+                },
+                "api": {
+                    "title": "📌 Expected format",
+                    "lines": [
+                        "Your API must return:",
+                        "[{\"col\":\"val\",...}]",
+                        "Enable CORS on your server"
+                    ]
+                },
+                "dhis2": {
+                    "title": "📌 Health Configuration (DHIS2)",
+                    "lines": [
+                        "1. Use the base URL (e.g., /demo/api)",
+                        "2. Required DataSet ID (e.g., p928...)",
+                        "3. Ensure you have Analytics rights"
+                    ]
+                }
+            }
+        }
+    },
+    "landing": {
+        "nav": {
+            "solutions": "Solutions",
+            "pricing": "Pricing",
+            "start": "Get Started"
+        },
+        "hero": {
+            "ia_badge": "✨ #1 Data Analysis AI in Guinea",
+            "title_1": "Transform your data into",
+            "title_2": "strategic decisions.",
+            "desc": "The only sovereign analytical platform designed for NGOs, Donors and Governments. Visualize, analyze and act with Kadi AI assistance.",
+            "btn_main": "Create Free Workspace",
+            "btn_sec": "See Demo"
+        },
+        "kadi_preview": "🤖 Kadi AI: \"Detected volume +24%\"",
+        "features": {
+            "title": "Why choose DataGN?",
+            "subtitle": "Industrial power at the service of field impact.",
+            "list": {
+                "map": {
+                    "t": "Precision Mapping",
+                    "d": "Visualize your KPIs by Region and Prefecture in 1 click. Indispensable for field management."
+                },
+                "ia": {
+                    "t": "Kadi Intelligence",
+                    "d": "Smart narrative, anomaly detection and automatic generation of donor reports."
+                },
+                "connect": {
+                    "t": "Universal Connectors",
+                    "d": "DHIS2, KoboToolbox, Google Sheets or Postgres DB. Your data no longer has boundaries."
+                }
+            }
+        },
+        "pricing": {
+            "title": "Plans for all Ambitions",
+            "best_seller": "BEST SELLER",
+            "mo": "/month",
+            "choose": "Choose {plan}",
+            "starter": {
+                "n": "Governance",
+                "f": [
+                    "1 Dashboard",
+                    "5 Dynamic Datasets",
+                    "Priority Email Support",
+                    "Kadi IA Basic Analysis"
+                ]
+            },
+            "impact": {
+                "n": "Strategic",
+                "f": [
+                    "5 Dynamic Dashboards",
+                    "Kadi IA Full Intelligence",
+                    "PRO Mapping & Geospatial",
+                    "Database & Big Data Access",
+                    "24/7 Dedicated Support"
+                ]
+            },
+            "enterprise": {
+                "n": "Sovereign (On-Premise)",
+                "f": [
+                    "Local Sovereign Security",
+                    "Air-Gapped Deployment",
+                    "Custom Mining/NGO ESG",
+                    "Full White-Label & SSO",
+                    "99.9% Governance SLA"
+                ]
+            }
+        },
+        "footer": "© 2026 DataGN — Built with pride in Conakry, Guinea."
+    }
+}

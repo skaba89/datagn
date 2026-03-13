@@ -1,0 +1,460 @@
+{
+    "common": {
+        "loading": "Chargement...",
+        "error": "Erreur",
+        "back": "Retour",
+        "save": "Enregistrer",
+        "export": "Exporter",
+        "cancel": "Annuler",
+        "confirm": "Confirmer",
+        "search": "Rechercher",
+        "no_data": "Aucune donnée trouvée",
+        "actions": "Actions",
+        "new_dashboard": "Nouveau Dashboard",
+        "dashboards": "Dashboards",
+        "save_success": "Dashboard enregistré !",
+        "save_error": "Erreur lors de l'enregistrement.",
+        "saving": "Enregistrement...",
+        "filters": "Filtres",
+        "reset": "Réinitialiser",
+        "apply": "Appliquer"
+    },
+    "nav": {
+        "overview": "Vue globale",
+        "charts": "Analyse locale",
+        "map": "Carte Guinée",
+        "quality": "Santé Données",
+        "table": "Données brutes",
+        "kadi": "Kadi AI",
+        "settings": "Paramètres",
+        "billing": "Facturation",
+        "logout": "Déconnexion"
+    },
+    "dashboard": {
+        "add_kpi": "Nouveau KPI",
+        "alerts": "Alertes",
+        "kadi_insight": "ANALYSE STRATÉGIQUE KADI",
+        "kadi_reload": "RÉ-ANALYSER",
+        "kadi_placeholder": "Cliquez sur 'Ré-analyser' pour obtenir un audit IA...",
+        "kadi_error": "Erreur d'analyse IA",
+        "export_pdf": "Export PDF",
+        "report_title": "Générateur de Rapport Pro",
+        "export_pdf_error": "Erreur lors de l'export PDF.",
+        "export_csv": "Export CSV",
+        "public": "🌐 Public",
+        "private": "🔒 Privé",
+        "public_link": "Lien public",
+        "public_link_copied": "Lien public copié !",
+        "share_error": "Erreur lors du changement de visibilité.",
+        "need_save": "Veuillez d'abord enregistrer le dashboard.",
+        "alert_msg": "indicateur(s) ont dépassé les seuils de sécurité configurés.",
+        "view_details": "VOIR DÉTAILS",
+        "executive_sum": "Résumé Exécutif Stratégique",
+        "page_name_prompt": "Nom de la nouvelle page :",
+        "topbar": {
+            "name_placeholder": "Nom...",
+            "syncing": "Sync...",
+            "live": "LIVE",
+            "menu": "Menu ▾",
+            "settings_title": "Réglages Dashboard",
+            "make_public": "Rendre Public",
+            "make_private": "Rendre Privé",
+            "change_source": "Changer la source",
+            "reload": "Actualiser"
+        }
+    },
+    "stats": {
+        "rows": "Lignes",
+        "cols": "Colonnes",
+        "kpis": "KPIs",
+        "source": "Source",
+        "vs_prev": "vs mois préc.",
+        "preview_title": "Aperçu des Données (Top 10)"
+    },
+    "charts": {
+        "units": "unités",
+        "dist_cat": "Distribution par catégorie",
+        "trend": "Tendance temporelle",
+        "share": "Répartition des parts",
+        "perf": "Comparatif Performance"
+    },
+    "table": {
+        "raw_data": "Données brutes",
+        "rows_cols": "{rows} lignes · {cols} colonnes",
+        "partial": "(100 affichées sur {total})",
+        "export_all": "📥 Exporter tout"
+    },
+    "quality": {
+        "title": "Diagnostic Qualité des Données",
+        "subtitle": "Analyse automatique de l'intégrité et de la complétude du jeu de données.",
+        "fill": "Remplissage",
+        "anomalies": "{count} anomalies détectées",
+        "anomalies_help": {
+            "number": "Valeurs à zéro (0) détectées dans une colonne numérique.",
+            "text": "Textes anormalement longs (> 200 caractères) détectés.",
+            "date": "Format de date non reconnu sur certaines lignes."
+        },
+        "score": "Score de Santé Global",
+        "score_desc": "Le score est calculé sur la base du taux de remplissage moyen de toutes les colonnes détectées.",
+        "lines": "lignes",
+        "types": {
+            "unknown": "Inconnu",
+            "number": "Nombre",
+            "date": "Date",
+            "text": "Texte"
+        }
+    },
+    "map": {
+        "no_geo": "Aucune donnée géographique détectée",
+        "no_geo_desc": "Assurez-vous d'avoir une colonne contenant les noms des régions (Conakry, Kindia, Boké, etc.)",
+        "title": "CARTE DE RÉPARTITION (GUINÉE)",
+        "subtitle": "Visualisation par région administrative",
+        "ranking": "CLASSEMENT TOP RÉGIONS",
+        "insight_title": "INSIGHT GÉO",
+        "insight_desc": "La région de {region} concentre la majorité de l'activité avec {percent}% du volume total détecté."
+    },
+    "filters": {
+        "label": "🔍 Filtres :",
+        "to": "à",
+        "placeholder": "Filtrer par {col}...",
+        "apply": "Appliquer",
+        "reset": "Réinitialiser"
+    },
+    "kpi_editor": {
+        "title": "Créer un KPI Personnalisé",
+        "name_label": "Nom du KPI",
+        "name_placeholder": "Ex: Chiffre d'Affaires",
+        "col_a": "Colonne A",
+        "op": "Op",
+        "col_b": "Colonne B (ou valeur)",
+        "preview": "Aperçu : ",
+        "add_btn": "Ajouter au Dashboard"
+    },
+    "alert_editor": {
+        "title": "Configurer une Alerte",
+        "label_label": "Libellé de l'alerte",
+        "label_placeholder": "Ex: Seuil critique",
+        "col_label": "Colonne à surveiller",
+        "op": "Opérateur",
+        "threshold": "Seuil et Condition",
+        "color_label": "Couleur de l'alerte",
+        "add_btn": "Créer l'alerte",
+        "ops": {
+            "lt": "Plus petit que",
+            "gt": "Plus grand que",
+            "eq": "Égal à"
+        },
+        "logic": "Logic : ",
+        "than": {
+            "lt": "inférieur à",
+            "gt": "supérieur à",
+            "eq": "égal à"
+        }
+    },
+    "kadi": {
+        "header_title": "Kadi — Assistante IA DataGN",
+        "header_subtitle": "Support 24/7 · Analyse · Maintenance",
+        "welcome": "Bonjour ! Je suis Kadi 🤖\n\n✅ {rows} lignes chargées\n✅ {kpis} KPIs détectés\n\nComment puis-je vous aider ?",
+        "chat_placeholder": "Posez votre question…",
+        "quick_actions": {
+            "analyze": "Analyser mes données",
+            "anomalies": "Détecter les anomalies",
+            "report": "Générer un rapport",
+            "recommend": "Recommandations prioritaires"
+        },
+        "tabs": {
+            "tickets": "🎫 Tickets",
+            "maintenance": "🔧 Maintenance",
+            "reports": "📄 Rapports"
+        },
+        "tickets": {
+            "new": "Nouveau ticket",
+            "placeholder": "Décrivez votre problème…",
+            "solving": "Kadi résout…",
+            "reply": "✅ Réponse Kadi :"
+        },
+        "maintenance": {
+            "title": "Statut système",
+            "auto_monitor": "🤖 Kadi surveille automatiquement",
+            "items": {
+                "source": "Source de données",
+                "parsing": "Parsing colonnes",
+                "kpis": "KPIs calculés",
+                "charts": "Graphiques",
+                "ia": "Kadi IA",
+                "export": "Export CSV"
+            },
+            "checks": [
+                "Connexion source de données",
+                "Qualité et fraîcheur des données",
+                "Anomalies indicateurs (>20%)",
+                "Parsing colonnes",
+                "API Anthropic disponible",
+                "Performance graphiques"
+            ]
+        },
+        "reports": {
+            "org_placeholder": "Organisation",
+            "period_placeholder": "Période (ex: Mars 2025)",
+            "gen_btn": "📄 Générer le rapport",
+            "copy_btn": "📋 Copier",
+            "success": "✅ Rapport généré",
+            "loading": "Kadi rédige…",
+            "types": {
+                "monthly": {
+                    "label": "Rapport mensuel",
+                    "desc": "KPIs + tendances + recommandations"
+                },
+                "alert": {
+                    "label": "Note d'alerte",
+                    "desc": "Indicateurs hors seuil"
+                },
+                "donor": {
+                    "label": "Rapport bailleur",
+                    "desc": "Format standard ONU/OCDE"
+                },
+                "itie": {
+                    "label": "ITIE / ESG",
+                    "desc": "Mines & transparence"
+                }
+            }
+        }
+    },
+    "settings": {
+        "title": "⚙️ Paramètres du Workspace",
+        "org_name": "Nom de l'organisation",
+        "chart_palette": "Palette de couleurs des graphiques",
+        "primary_color": "Couleur Primaire (Accent)",
+        "logo_url": "URL du Logo (Branding)",
+        "logo_help": "Laissez vide pour utiliser le logo DataGN par défaut.",
+        "hide_kadi": "Masquer l'assistant Kadi IA sur les rapports publics",
+        "save_btn": "Sauvegarder les modifications",
+        "save_success": "Paramètres enregistrés !",
+        "save_error": "Erreur lors de la sauvegarde.",
+        "loading": "Chargement des réglages...",
+        "palettes": {
+            "vibrant": "Vibrant",
+            "pastel": "Pastel",
+            "cool": "Cool",
+            "trust": "Confiance"
+        },
+        "modules_title": "Modules & Services Activés",
+        "modules_desc": "Activez ou désactivez les fonctionnalités spécifiques pour votre Workspace.",
+        "enable_kadi": "Assistant Intelligent Kadi IA",
+        "enable_map": "Cartographie Régionale Interactive",
+        "enable_quality": "Diagnostic de Santé des Données",
+        "logo_upload": "Importer un logo (Fichier)",
+        "tab_general": "Général",
+        "tab_branding": "Branding",
+        "tab_services": "Modules"
+    },
+    "billing": {
+        "title": "Facturation & Plans",
+        "current_title": "Votre Plan Actuel",
+        "renewal": "Renouvellement le 1er du mois prochain",
+        "paid": "PAIEMENT ACTIF",
+        "dashboards": "Dashboards",
+        "sources": "Sources de données",
+        "kadi_intelligence": "Intelligence Kadi IA",
+        "upgrade_title": "Changer de Dimension Analystique",
+        "upgrade_to": "Passer au plan {plan}",
+        "up_dashboards": "Jusqu'à {count} dashboards",
+        "up_sources": "Jusqu'à {count} sources connectées",
+        "up_kadi": "Inclus l'assistant intelligent Kadi IA",
+        "sub_btn": "S'abonner pour {price}/mo",
+        "success": "Félicitations ! Vous êtes maintenant sur le plan {plan}.",
+        "processing": "Traitement en cours...",
+        "loading": "Chargement des données de facturation...",
+        "active": "ACTIF",
+        "no": "NON",
+        "unlimited": "ILLIMITÉ",
+        "off": "OFF",
+        "mo": "/mo",
+        "current_plan": "Plan Actuel",
+        "upgrade": "Passer au plan"
+    },
+    "kadi_float": {
+        "error_conn": "⚠️ Connexion indisponible. Écrivez à contact@datagn.com",
+        "quick": {
+            "prices": "Nos tarifs ?",
+            "demo": "Démo gratuite",
+            "connect": "Connecter mes données"
+        },
+        "support_247": "Support 24/7",
+        "welcome": "👋 Bonjour ! Je suis Kadi, l'IA de DataGN.\n\nQue souhaitez-vous savoir sur nos dashboards ?",
+        "placeholder": "Votre message…"
+    },
+    "onboarding": {
+        "live": "DASHBOARD LIVE",
+        "hero_title": "Connectez vos données.",
+        "hero_subtitle": "Visualisez l'impact.",
+        "hero_desc": "Choisissez votre source. Le dashboard se construit automatiquement.\nKadi IA analyse et surveille 24/7.",
+        "sources": {
+            "gsheets": {
+                "label": "Google Sheets",
+                "desc": "Publiez votre feuille — synchronisation automatique à chaque modification terrain."
+            },
+            "csv": {
+                "label": "CSV / Excel",
+                "desc": "Export DHIS2, registre Excel ou tout fichier CSV. Colonnes détectées automatiquement."
+            },
+            "kobo": {
+                "label": "KoboToolbox",
+                "desc": "Collecte hors-ligne sur tablettes. Soumissions visibles en direct sur le dashboard."
+            },
+            "api": {
+                "label": "API / Base de données",
+                "desc": "PostgreSQL, MySQL ou API REST. Mise à jour en temps réel depuis votre système."
+            },
+            "dhis2": {
+                "label": "DHIS2 (Santé)",
+                "desc": "Connecteur direct pour les indicateurs de santé publique et rapports DHIS2."
+            }
+        },
+        "trust": [
+            "✓ Déploiement 2 semaines",
+            "✓ ONG · Gouvernements · Mines",
+            "✓ -60% vs agences internationales"
+        ],
+        "config": {
+            "back": "← Retour",
+            "load_btn": "Charger les données →",
+            "loading": "Chargement…",
+            "error_empty": "Aucune donnée trouvée dans la source",
+            "csv_drop": "Glissez votre fichier CSV ici",
+            "csv_help": "CSV ou TSV — Max 10 MB",
+            "fields": {
+                "url": "URL Google Sheets",
+                "refresh": "Actualisation (sec)",
+                "token": "Token API",
+                "formId": "ID Formulaire",
+                "server": "Serveur (optionnel)",
+                "endpoint": "URL endpoint",
+                "apiKey": "Clé API (optionnel)",
+                "baseUrl": "URL DHIS2",
+                "username": "Utilisateur",
+                "password": "Mot de passe",
+                "dataSet": "ID du DataSet",
+                "orgUnit": "Org Unit ID",
+                "period": "Période"
+            },
+            "placeholders": {
+                "url": "https://docs.google.com/spreadsheets/d/...",
+                "refresh": "30",
+                "token": "Profil → Sécurité → Token API",
+                "formId": "…/assets/ID_ICI/…",
+                "server": "kf.kobotoolbox.org",
+                "endpoint": "https://votre-api.com/data",
+                "apiKey": "Bearer eyJ...",
+                "baseUrl": "https://play.dhis2.org/demo",
+                "username": "admin",
+                "password": "********",
+                "dataSet": "BfMAe6Itzgt",
+                "orgUnit": "Im7HToPbejZ",
+                "period": "2023"
+            },
+            "tips": {
+                "gsheets": {
+                    "title": "📌 Comment publier",
+                    "lines": [
+                        "1. Fichier → Partager → Publier sur le web",
+                        "2. Choisir \"Feuille\" + format \"CSV\" → Publier",
+                        "3. Copiez l'URL ici"
+                    ]
+                },
+                "kobo": {
+                    "title": "📌 Où trouver vos identifiants",
+                    "lines": [
+                        "Token : ",
+                        "kf.kobotoolbox.org → Profil → Sécurité",
+                        "ID formulaire dans l'URL de votre formulaire"
+                    ]
+                },
+                "api": {
+                    "title": "📌 Format attendu",
+                    "lines": [
+                        "Votre API doit retourner :",
+                        "[{\"col\":\"val\",...}]",
+                        "Activez CORS sur votre serveur"
+                    ]
+                },
+                "dhis2": {
+                    "title": "📌 Configuration Santé (DHIS2)",
+                    "lines": [
+                        "1. Utilisez l'URL de base (ex: /demo/api)",
+                        "2. ID du DataSet requis (ex: p928...) ",
+                        "3. Assurez-vous d'avoir les droits Analytics"
+                    ]
+                }
+            }
+        }
+    },
+    "landing": {
+        "nav": {
+            "solutions": "Solutions",
+            "pricing": "Tarifs",
+            "start": "Démarrer"
+        },
+        "hero": {
+            "ia_badge": "✨ L'IA d'analyse de données n°1 en Guinée",
+            "title_1": "Transformez vos données en",
+            "title_2": "décisions stratégiques.",
+            "desc": "La seule plateforme analytique souveraine conçue pour les ONG, Bailleurs et Gouvernements. Visualisez, analysez et agissez avec l'assistance de Kadi IA.",
+            "btn_main": "Créer un Workspace Gratuit",
+            "btn_sec": "Voir la Démo"
+        },
+        "kadi_preview": "🤖 Kadi IA : \"Volume détecté +24%\"",
+        "features": {
+            "title": "Pourquoi choisir DataGN ?",
+            "subtitle": "Une puissance industrielle au service de l'impact terrain.",
+            "list": {
+                "map": {
+                    "t": "Cartographie de Précision",
+                    "d": "Visualisez vos KPIs par Région et Préfecture en 1 clic. Indispensable pour le pilotage terrain."
+                },
+                "ia": {
+                    "t": "Intelligence Kadi",
+                    "d": "Narrative intelligente, détection d'anomalies et rédaction automatique de rapports bailleurs."
+                },
+                "connect": {
+                    "t": "Connecteurs Universels",
+                    "d": "DHIS2, KoboToolbox, Google Sheets ou BDD Postgres. Vos données n'ont plus de frontières."
+                }
+            }
+        },
+        "pricing": {
+            "title": "Plans pour toutes les Ambitions",
+            "best_seller": "BEST SELLER",
+            "mo": "/mois",
+            "choose": "Choisir {plan}",
+            "starter": {
+                "n": "Gouvernance",
+                "f": [
+                    "5 Dashboards Dynamiques",
+                    "10 Sources de données",
+                    "Analyse Automatique Basic",
+                    "Support 24/7 (Email)"
+                ]
+            },
+            "impact": {
+                "n": "Stratégique",
+                "f": [
+                    "Dashboards Illimités",
+                    "Intelligence Kadi IA Full",
+                    "Cartographie 4K & Drill-down",
+                    "Rapports Bailleurs Automatiques"
+                ]
+            },
+            "enterprise": {
+                "n": "Souverain (On-Premise)",
+                "f": [
+                    "Accès BDD & Big Data",
+                    "Sécurité Souveraine Locale",
+                    "White-Label & Custom IA",
+                    "SLA Garanti 99.9%"
+                ]
+            }
+        },
+        "footer": "© 2026 DataGN — Fabriqué avec fierté à Conakry, Guinée."
+    }
+}
