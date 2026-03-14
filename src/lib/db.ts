@@ -1,24 +1,8 @@
-import { PrismaClient, Prisma } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 
 const prismaClientSingleton = () => {
-    return new PrismaClient().$extends({
-        model: {
-            $allModels: {
-                async findManyWithContext<T, A>(
-                    this: T,
-                    args: Prisma.Args<T, 'findMany'> & { context?: { workspaceId: string } }
-                ) {
-                    const { context, ...rest } = args as any;
-                    const client = Prisma.getExtensionContext(this);
-                    if (context?.workspaceId) {
-                        await (client as any).$baseClient.$executeRawUnsafe(`SET app.current_workspace_id = '${context.workspaceId}'`);
-                    } else {
-                        await (client as any).$baseClient.$executeRawUnsafe(`SET app.current_workspace_id = ''`);
-                    }
-                    return (this as any).findMany(rest);
-                },
-            },
-        },
+    return new PrismaClient({
+        log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     })
 }
 

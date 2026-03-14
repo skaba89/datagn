@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -61,12 +61,12 @@ model DatasetVersion {
   objectKey    String
   originalName String?
   contentType  String?
-  sizeBytes    BigInt?
+  sizeBytes    Int?
   rowCount     Int?
   columnCount  Int?
-  schemaJson   Json?
-  profileJson  Json?
-  sampleJson   Json?
+  schemaJson   String?
+  profileJson  String?
+  sampleJson   String?
   status       String       @default("uploaded")
   createdAt    DateTime     @default(now())
   datasetId    String
@@ -84,7 +84,7 @@ model Dashboard {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   workspaceId String
-  config      Json?
+  config      String?
   sourceType  String           @default("csv")
   isPublic    Boolean          @default(false)
   workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -96,7 +96,7 @@ model Chart {
   id               String           @id @default(cuid())
   name             String
   type             String
-  configJson       Json
+  configJson       String
   createdAt        DateTime         @default(now())
   datasetVersionId String
   datasetVersion   DatasetVersion   @relation(fields: [datasetVersionId], references: [id], onDelete: Cascade)
@@ -118,7 +118,7 @@ model AIAnalysis {
   id               String         @id @default(cuid())
   createdAt        DateTime       @default(now())
   prompt           String
-  responseJson     Json
+  responseJson     String
   model            String
   tokensIn         Int?
   tokensOut        Int?
@@ -144,10 +144,10 @@ model JobRun {
   finishedAt  DateTime?
   attempts    Int       @default(0)
   error       String?
-  logsJson    Json?
+  logsJson    String?
   workspaceId String
-  payloadJson Json?
-  resultJson  Json?
+  payloadJson String?
+  resultJson  String?
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
@@ -159,7 +159,7 @@ model AuditLog {
   action      String
   entityType  String
   entityId    String?
-  metaJson    Json?
+  metaJson    String?
   user        User?     @relation(fields: [userId], references: [id])
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }

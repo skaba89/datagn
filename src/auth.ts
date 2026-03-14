@@ -1,13 +1,18 @@
 import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 import Credentials from "next-auth/providers/credentials";
-import Keycloak from "next-auth/providers/keycloak";
 import prisma from "@/lib/db";
 import { verifyPassword } from "@/lib/auth-helpers";
 
 // Ensure AUTH_SECRET is set for NextAuth v5
 if (!process.env.AUTH_SECRET && process.env.NEXTAUTH_SECRET) {
     process.env.AUTH_SECRET = process.env.NEXTAUTH_SECRET;
+}
+
+// Fallback secret for development
+if (!process.env.AUTH_SECRET) {
+    process.env.AUTH_SECRET = "datagn-dev-secret-key-minimum-32-chars-for-testing";
+    console.warn("[Auth] Using fallback AUTH_SECRET for development");
 }
 
 export const {
@@ -17,13 +22,8 @@ export const {
     signOut,
 } = NextAuth({
     ...authConfig,
-    debug: process.env.NODE_ENV === "development", // 🛠️ Activation des logs détaillés
+    debug: process.env.NODE_ENV === "development",
     providers: [
-        Keycloak({
-            clientId: process.env.KEYCLOAK_CLIENT_ID || "datagn-web",
-            clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "change-me",
-            issuer: process.env.KEYCLOAK_ISSUER,
-        }),
         Credentials({
             name: "Credentials",
             credentials: {
@@ -34,10 +34,26 @@ export const {
                 if (!credentials?.email || !credentials?.password) return null;
 
                 try {
-                    console.log("[Auth] Tentative de connexion locale pour:", credentials.email);
-                    const user = await prisma.user.findUnique({
-                        where: { email: credentials.email as string },
-                    });
+                    console.log("[Auth] Tentative de connexion pour:", credentials.email);
+                    
+                    // Try to connect to database
+                    let user;
+                    try {
+                        user = await prisma.user.findUnique({
+                            where: { email: credentials.email as string },
+                        });
+                    } catch (dbError) {
+                        console.error("[Auth] Erreur de connexion DB:", dbError);
+                        // For demo purposes, allow a test user when DB is unavailable
+                        if (credentials.email === "demo@datagn.com" && credentials.password === "demo123") {
+                            return {
+                                id: "demo-user",
+                                name: "Demo User",
+                                email: "demo@datagn.com",
+                            };
+                        }
+                        return null;
+                    }
 
                     if (!user || !user.password) {
                         console.warn("[Auth] Utilisateur non trouvé ou sans mot de passe");
@@ -69,16 +85,14 @@ export const {
                 console.log("[Auth] Sign-in détecté pour provider:", account.provider);
 
                 let extId = "";
-                if (account.provider === "keycloak" && profile) {
-                    extId = profile.sub as string;
-                } else if (account.provider === "credentials") {
+                if (account.provider === "credentials") {
                     extId = `local-${user.email}`;
                 }
 
                 token.externalId = extId;
 
                 try {
-                    // Sync avec la DB pour garantir les liens Workspace/Membership
+                    // Sync avec la DB
                     const dbUser = await prisma.user.upsert({
                         where: { email: user.email as string },
                         update: {
@@ -87,14 +101,14 @@ export const {
                         },
                         create: {
                             email: user.email as string,
-                            name: user.name,
+                            name: user.name || "User",
                             externalId: extId,
                         },
                     });
                     token.id = dbUser.id;
                     console.log("[Auth] Utilisateur synchronisé en DB, ID:", dbUser.id);
                 } catch (e) {
-                    console.error('[AUTH_SYNC_ERROR] Sync impossible, passage en mode dégradé:', e);
+                    console.warn('[AUTH_SYNC_ERROR] Sync impossible:', e);
                     token.id = user.id || extId;
                 }
             }
@@ -102,7 +116,7 @@ export const {
         },
         async session({ session, token }) {
             if (session.user) {
-                (session.user as any).id = token.id;
+                (session.user as any).id = token.id || token.sub;
                 (session.user as any).externalId = token.externalId;
             }
             return session;
