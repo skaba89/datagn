@@ -8,6 +8,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 const KadiPanel = dynamic(() => import('./KadiPanel'), { ssr: false });
 const MapTab = dynamic(() => import('./MapTab'), { ssr: false });
 const ReportGenerator = dynamic(() => import('./ReportGenerator'), { ssr: false });
+const EnhancedReportGenerator = dynamic(() => import('./EnhancedReportGenerator'), { ssr: false });
 const KPIEditor = dynamic(() => import('./KPIEditor'), { ssr: false });
 const AlertEditor = dynamic(() => import('./AlertEditor'), { ssr: false });
 const SettingsPanel = dynamic(() => import('./SettingsPanel'), { ssr: false });
@@ -80,6 +81,7 @@ export default function Dashboard({
 
   const [tab, setTab] = useState<Tab>('overview');
   const [showReportGen, setShowReportGen] = useState(false);
+  const [useEnhancedReport, setUseEnhancedReport] = useState(true); // Use enhanced by default
   const [customKPIs, setCustomKPIs] = useState<CustomKPI[]>([]);
   const [showKPIEditor, setShowKPIEditor] = useState(false);
   const [showAlertEditor, setShowAlertEditor] = useState(false);
@@ -375,12 +377,22 @@ export default function Dashboard({
       />
 
       {showReportGen && (
-        <ReportGenerator
-          data={data}
-          viz={viz}
-          dbName={currentDbName}
-          onClose={() => setShowReportGen(false)}
-        />
+        useEnhancedReport ? (
+          <EnhancedReportGenerator
+            data={data}
+            viz={viz}
+            dbName={currentDbName}
+            onClose={() => setShowReportGen(false)}
+            currency={workspace?.currency || 'GNF'}
+          />
+        ) : (
+          <ReportGenerator
+            data={data}
+            viz={viz}
+            dbName={currentDbName}
+            onClose={() => setShowReportGen(false)}
+          />
+        )
       )}
 
 
