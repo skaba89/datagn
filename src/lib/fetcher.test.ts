@@ -1,91 +1,296 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchGSheets, fetchAPI, fetchCSV, SourceConfig } from './fetcher';
-import { Row } from './parser';
+import { fetchGSheets, fetchKobo, fetchAPI, fetchCSV, normalizeGSheetsUrl } from './fetcher';
+
+// Mock global fetch
+global.fetch = vi.fn();
 
 describe('fetcher.ts', () => {
-    beforeEach(() => {
-        vi.restoreAllMocks();
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('normalizeGSheetsUrl', () => {
+    it('should extract ID and convert to CSV export URL', () => {
+      const url = 'https://docs.google.com/spreadsheets/d/abc123456/edit';
+      const result = normalizeGSheetsUrl(url);
+      expect(result).toBe('https://docs.google.com/spreadsheets/d/abc123456/export?format=csv&gid=0');
     });
 
-    describe('fetchGSheets', () => {
-        it('should throw an error if URL is missing', async () => {
-            const cfg: SourceConfig = {};
-            await expect(fetchGSheets(cfg)).rejects.toThrow('URL Google Sheets manquante');
-        });
-
-        it('should normalize and fetch Google Sheets URL', async () => {
-            const mockCsv = 'Name,Age\nAlice,30\nBob,25';
-            global.fetch = vi.fn().mockResolvedValue({
-                ok: true,
-                text: async () => mockCsv,
-            });
-
-            const cfg: SourceConfig = { url: 'https://docs.google.com/spreadsheets/d/123XYZ/edit#gid=0' };
-            const result = await fetchGSheets(cfg);
-
-            expect(global.fetch).toHaveBeenCalledWith(
-                'https://docs.google.com/spreadsheets/d/123XYZ/export?format=csv&gid=0',
-                { cache: 'no-store' }
-            );
-            expect(result).toHaveLength(2);
-            expect(result[0]).toEqual({ Name: 'Alice', Age: 30 });
-        });
+    it('should preserve gid parameter if present', () => {
+      const url = 'https://docs.google.com/spreadsheets/d/abc123456/edit?gid=12345';
+      const result = normalizeGSheetsUrl(url);
+      expect(result).toContain('gid=12345');
     });
 
-    describe('fetchAPI', () => {
-        it('should throw an error if endpoint is missing', async () => {
-            const cfg: SourceConfig = {};
-            await expect(fetchAPI(cfg)).rejects.toThrow('URL de l\'endpoint manquante');
-        });
-
-        it('should fetch and parse standard JSON array', async () => {
-            const mockJson = [
-                { id: 1, name: 'Test 1' },
-                { id: 2, name: 'Test 2' }
-            ];
-
-            global.fetch = vi.fn().mockResolvedValue({
-                ok: true,
-                json: async () => mockJson,
-            });
-
-            const cfg: SourceConfig = { endpoint: 'https://api.example.com/data' };
-            const result = await fetchAPI(cfg);
-
-            expect(result).toHaveLength(2);
-            expect(result[0]).toEqual({ id: 1, name: 'Test 1' });
-        });
-
-        it('should add Authorization header if apiKey is provided', async () => {
-            global.fetch = vi.fn().mockResolvedValue({
-                ok: true,
-                json: async () => [{ id: 1 }],
-            });
-
-            const cfg: SourceConfig = { endpoint: 'https://api.example.com/data', apiKey: 'secret_token' };
-            await fetchAPI(cfg);
-
-            expect(global.fetch).toHaveBeenCalledWith(
-                'https://api.example.com/data',
-                {
-                    headers: { Authorization: 'Bearer secret_token' },
-                    cache: 'no-store'
-                }
-            );
-        });
+    it('should throw error for invalid URL', () => {
+      expect(() => normalizeGSheetsUrl('https://invalid-url.com')).toThrow(
+        'ID de feuille introuvable'
+      );
     });
 
-    describe('fetchCSV', () => {
-        it('should read File object and parse CSV', async () => {
-            const mockCsv = 'Name,Score\nAlice,95\nBob,80';
-            const mockFile = {
-                text: async () => mockCsv
-            } as any as File;
-
-            const result = await fetchCSV(mockFile);
-
-            expect(result).toHaveLength(2);
-            expect(result[0]).toEqual({ Name: 'Alice', Score: 95 });
-        });
+    it('should return URL as-is if already an export URL', () => {
+      const url = 'https://docs.google.com/spreadsheets/d/abc/export?format=csv';
+      const result = normalizeGSheetsUrl(url);
+      expect(result).toBe(url);
     });
+  });
+
+  describe('fetchGSheets', () => {
+    it('should fetch and parse CSV from Google Sheets', async () => {
+      const mockCsv = 'Name,Age\nAlice,30\nBob,25';
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve(mockCsv),
+      });
+
+      const result = await fetchGSheets({
+        url: 'https://docs.google.com/spreadsheets/d/abc123/edit',
+      });
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ Name: 'Alice', Age: 30 });
+      expect(result[1]).toEqual({ Name: 'Bob', Age: 25 });
+    });
+
+    it('should throw error if URL is missing', async () => {
+      await expect(fetchGSheets({})).rejects.toThrow('URL Google Sheets manquante');
+    });
+
+    it('should throw error if sheet is not public', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve('<!DOCTYPE html><html>...</html>'),
+      });
+
+      await expect(
+        fetchGSheets({ url: 'https://docs.google.com/spreadsheets/d/abc/edit' })
+      ).rejects.toThrow("n'est pas publiée");
+    });
+
+    it('should throw error on HTTP error', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+      });
+
+      await expect(
+        fetchGSheets({ url: 'https://docs.google.com/spreadsheets/d/abc/edit' })
+      ).rejects.toThrow('Erreur 404');
+    });
+  });
+
+  describe('fetchKobo', () => {
+    it('should fetch and clean KoboToolbox data', async () => {
+      const mockData = {
+        results: [
+          { 'group/field1': 'value1', 'group/field2': 42, '_uuid': 'skip-me' },
+          { 'group/field1': 'value2', 'group/field2': 24 },
+        ],
+      };
+
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockData),
+      });
+
+      const result = await fetchKobo({
+        token: 'test-token',
+        formId: 'test-form',
+      });
+
+      expect(result).toHaveLength(2);
+      expect(result[0]['field1']).toBe('value1');
+      expect(result[0]['field2']).toBe(42);
+      // Should not have _uuid (starts with _)
+      expect(result[0]['_uuid']).toBeUndefined();
+    });
+
+    it('should throw error if token is missing', async () => {
+      await expect(fetchKobo({ formId: 'test' })).rejects.toThrow(
+        'Token API KoboToolbox manquant'
+      );
+    });
+
+    it('should throw error if formId is missing', async () => {
+      await expect(fetchKobo({ token: 'test' })).rejects.toThrow(
+        'ID de formulaire KoboToolbox manquant'
+      );
+    });
+  });
+
+  describe('fetchAPI', () => {
+    it('should fetch and normalize API data', async () => {
+      const mockData = {
+        data: [
+          { id: 1, name: 'Item 1', price: 100 },
+          { id: 2, name: 'Item 2', price: 200 },
+        ],
+      };
+
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockData),
+      });
+
+      const result = await fetchAPI({
+        endpoint: 'https://api.example.com/items',
+      });
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ id: 1, name: 'Item 1', price: 100 });
+    });
+
+    it('should handle array response directly', async () => {
+      const mockData = [{ id: 1 }, { id: 2 }];
+
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockData),
+      });
+
+      const result = await fetchAPI({
+        endpoint: 'https://api.example.com/items',
+      });
+
+      expect(result).toHaveLength(2);
+    });
+
+    it('should handle results wrapper', async () => {
+      const mockData = {
+        results: [{ id: 1 }],
+      };
+
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockData),
+      });
+
+      const result = await fetchAPI({
+        endpoint: 'https://api.example.com/items',
+      });
+
+      expect(result).toHaveLength(1);
+    });
+
+    it('should add Authorization header if apiKey provided', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ data: [] }),
+      });
+
+      await fetchAPI({
+        endpoint: 'https://api.example.com/items',
+        apiKey: 'my-api-key',
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.example.com/items',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer my-api-key',
+          }),
+        })
+      );
+    });
+
+    it('should preserve Bearer prefix if already present', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ data: [] }),
+      });
+
+      await fetchAPI({
+        endpoint: 'https://api.example.com/items',
+        apiKey: 'Bearer my-token',
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.example.com/items',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer my-token',
+          }),
+        })
+      );
+    });
+
+    it('should throw error for empty response', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+
+      await expect(
+        fetchAPI({ endpoint: 'https://api.example.com/items' })
+      ).rejects.toThrow('Réponse API vide');
+    });
+  });
+
+  describe('fetchCSV', () => {
+    it('should parse CSV file content', async () => {
+      const csvContent = 'Name,Age,Active\nAlice,30,true\nBob,25,false';
+      const file = new File([csvContent], 'test.csv', { type: 'text/csv' });
+
+      const result = await fetchCSV(file);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ Name: 'Alice', Age: 30, Active: 'true' });
+      expect(result[1]).toEqual({ Name: 'Bob', Age: 25, Active: 'false' });
+    });
+
+    it('should handle semicolon separator', async () => {
+      const csvContent = 'Name;Age\nAlice;30\nBob;25';
+      const file = new File([csvContent], 'test.csv', { type: 'text/csv' });
+
+      const result = await fetchCSV(file);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ Name: 'Alice', Age: 30 });
+    });
+
+    it('should handle tab separator', async () => {
+      const csvContent = 'Name\tAge\nAlice\t30\nBob\t25';
+      const file = new File([csvContent], 'test.tsv', { type: 'text/tsv' });
+
+      const result = await fetchCSV(file);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ Name: 'Alice', Age: 30 });
+    });
+
+    it('should add source file metadata', async () => {
+      const csvContent = 'Name,Age\nAlice,30';
+      const file = new File([csvContent], 'data_2024-01.csv', { type: 'text/csv' });
+
+      const result = await fetchCSV(file);
+
+      expect(result[0]['_source_file']).toBe('data_2024-01.csv');
+    });
+
+    it('should detect period from filename', async () => {
+      const csvContent = 'Name,Age\nAlice,30';
+      const file = new File([csvContent], 'data_2024-01_janvier.csv', { type: 'text/csv' });
+
+      const result = await fetchCSV(file);
+
+      expect(result[0]['_period']).toBeDefined();
+    });
+
+    it('should handle multiple files', async () => {
+      const csv1 = 'Name,Age\nAlice,30';
+      const csv2 = 'Name,Age\nBob,25';
+      const file1 = new File([csv1], 'file1.csv', { type: 'text/csv' });
+      const file2 = new File([csv2], 'file2.csv', { type: 'text/csv' });
+
+      const result = await fetchCSV([file1, file2]);
+
+      expect(result).toHaveLength(2);
+    });
+
+    it('should throw error for empty file', async () => {
+      const file = new File([''], 'empty.csv', { type: 'text/csv' });
+
+      await expect(fetchCSV(file)).rejects.toThrow('vide');
+    });
+  });
 });
