@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,20 +7,263 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String     @id @default(cuid())
+  email         String     @unique
+  name          String?
+  password      String?
+  role          UserRole   @default(VIEWER)
+  avatar        String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  ownedDashboards  Dashboard[]    @relation("OwnedDashboards")
+  dashboardAccess  DashboardUser[]
+  kpiValues        KPIValue[]
+  auditLogs        AuditLog[]
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum UserRole {
+  ADMIN     // Full access: create/delete dashboards, manage users, all KPIs
+  EDITOR    // Can create dashboards, add/edit KPIs
+  VIEWER    // Read-only access
+}
+
+// ============================================
+// DASHBOARD
+// ============================================
+
+model Dashboard {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  icon          String?
+  color         String   @default("#10B981")
+  layout        String   @default("grid") // grid, flex, bento
+  isPublic      Boolean  @default(false)
+  isFavorite    Boolean  @default(false)
+  order         Int      @default(0)
+  config        String?  // JSON for advanced config
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  ownerId       String
+  owner         User     @relation("OwnedDashboards", fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  users         DashboardUser[]
+  kpis          KPI[]
+  widgets       Widget[]
+  alerts        Alert[]
+  
+  @@index([ownerId])
+}
+
+model DashboardUser {
+  id           String       @id @default(cuid())
+  role         DashboardRole
+  createdAt    DateTime     @default(now())
+  
+  userId       String
+  dashboardId  String
+  
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dashboard    Dashboard    @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, dashboardId])
+}
+
+enum DashboardRole {
+  OWNER    // Full control including deletion
+  EDITOR   // Can add/edit KPIs and widgets
+  VIEWER   // Read-only
+}
+
+// ============================================
+// KPI (Key Performance Indicator)
+// ============================================
+
+model KPI {
+  id            String      @id @default(cuid())
+  name          String
+  description   String?
+  
+  // Value Configuration
+  valueType     String      @default("number") // number, currency, percentage
+  unit          String?
+  decimals      Int         @default(0)
+  
+  // Target & Thresholds
+  target        Float?
+  warningThreshold Float?
+  criticalThreshold Float?
+  
+  // Display Configuration
+  category      String?
+  icon          String?
+  color         String      @default("#10B981")
+  size          String      @default("medium") // small, medium, large, xlarge
+  
+  // Visualization Type
+  vizType       String      @default("sparkline") // sparkline, gauge, trend, progress, bullet, scorecard
+  
+  // Comparison
+  compareMode   String      @default("previous_period") // previous_period, target, custom
+  comparisonLabel String?
+  
+  // Predictions
+  showPrediction  Boolean   @default(true)
+  predictionPeriods Int     @default(6)
+  
+  // Data Source (for dynamic KPIs)
+  dataSource    String?     // static, api, database, formula
+  dataSourceConfig String?
+  refreshInterval Int?
+  
+  // Layout
+  order         Int         @default(0)
+  columnSpan    Int         @default(1)  // 1-4 columns
+  rowSpan       Int         @default(1)
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  dashboardId   String
+  dashboard     Dashboard   @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  
+  values        KPIValue[]
+  history       KPIHistory[]
+  alerts        Alert[]
+  
+  @@index([dashboardId])
+}
+
+model KPIValue {
+  id          String    @id @default(cuid())
+  value       Float
+  previousValue Float?
+  trend       Float?
+  confidence  Float?
+  metadata    String?   // JSON for additional data
+  
+  recordedAt  DateTime  @default(now())
+  
+  kpiId       String
+  userId      String?
+  
+  kpi         KPI       @relation(fields: [kpiId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id])
+  
+  @@index([kpiId, recordedAt])
+}
+
+model KPIHistory {
+  id          String    @id @default(cuid())
+  value       Float
+  recordedAt  DateTime  @default(now())
+  
+  kpiId       String
+  kpi         KPI       @relation(fields: [kpiId], references: [id], onDelete: Cascade)
+  
+  @@index([kpiId, recordedAt])
+}
+
+// ============================================
+// WIDGETS (Charts, Tables, etc.)
+// ============================================
+
+model Widget {
+  id            String    @id @default(cuid())
+  type          String    // line-chart, bar-chart, pie-chart, table, metric, gauge, map, funnel
+  
+  title         String
+  subtitle      String?
+  
+  // Configuration
+  config        String    // JSON for widget-specific config
+  dataSource    String?
+  
+  // Layout
+  order         Int       @default(0)
+  columnSpan    Int       @default(1)
+  rowSpan       Int       @default(1)
+  
+  // Styling
+  colorScheme   String?
+  showLegend    Boolean   @default(true)
+  showGrid      Boolean   @default(true)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  dashboardId   String
+  dashboard     Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  
+  @@index([dashboardId])
+}
+
+// ============================================
+// ALERTS & NOTIFICATIONS
+// ============================================
+
+model Alert {
+  id            String    @id @default(cuid())
+  type          String    // threshold, anomaly, prediction
+  condition     String
+  message       String
+  severity      String    @default("warning") // info, warning, critical
+  
+  isActive      Boolean   @default(true)
+  isRead        Boolean   @default(false)
+  
+  triggeredAt   DateTime  @default(now())
+  
+  dashboardId   String
+  kpiId         String?
+  
+  dashboard     Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  kpi           KPI?      @relation(fields: [kpiId], references: [id], onDelete: Cascade)
+  
+  @@index([dashboardId, isRead])
+}
+
+// ============================================
+// AUDIT LOG
+// ============================================
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  action      String    // create, update, delete, view
+  entity      String    // dashboard, kpi, widget
+  entityId    String?
+  metadata    String?   // JSON
+  
+  createdAt   DateTime  @default(now())
+  
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+  
+  @@index([userId, createdAt])
+}
+
+// ============================================
+// DATA SOURCES (for integrations)
+// ============================================
+
+model DataSource {
+  id            String    @id @default(cuid())
+  name          String
+  type          String    // database, api, file, webhook
+  connection    String    // encrypted connection string or URL
+  config        String?
+  
+  lastSync      DateTime?
+  syncStatus    String    @default("pending")
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
