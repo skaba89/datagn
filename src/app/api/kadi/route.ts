@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCorsHeaders } from '@/lib/cors';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
-
-
 import { redisIncr, redisPExpire, redisPTTL } from '@/lib/redis';
+import { groqChat, isGroqConfigured, GROQ_MODELS } from '@/lib/groq';
 
 // ─────────────────────────────────────────────────────────────────
 // Rate Limiter avec Redis — 20 req / 60 s par IP
@@ -83,9 +82,14 @@ export async function OPTIONS(req: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     status: 'ok',
-    service: 'Kadi IA — DataGN v2.0',
+    service: 'Kadi IA — DataGN v2.1 (Groq Powered)',
     ts: new Date().toISOString(),
     rateLimit: { limit: RATE_LIMIT, window: '60s' },
+    ai: {
+      provider: 'Groq',
+      model: GROQ_MODELS.LLAMA_70B,
+      configured: isGroqConfigured()
+    }
   });
 }
 
@@ -135,39 +139,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'messages requis (tableau non vide)' }, { status: 400, headers: corsH });
     }
 
-    // ── Clés API ───────────────────────────────────────────────────
-    const anthropicKey = process.env.ANTHROPIC_API_KEY || '';
-    const openAIKey = process.env.OPENAI_API_KEY || '';
-
-    console.log('[Kadi] Keys check:', {
-      hasAnthropic: !!anthropicKey,
-      hasOpenAI: !!openAIKey,
-      openAIStart: openAIKey ? openAIKey.substring(0, 10) + '...' : 'none'
-    });
-
-    if (!anthropicKey && !openAIKey) {
-      return NextResponse.json(
-        { error: 'Clé API manquante (Anthropic ou OpenAI) — configurez votre .env.local' },
-        { status: 500, headers: corsH }
-      );
-    }
+    // ── Vérification Groq ───────────────────────────────────────────
+    const groqConfigured = isGroqConfigured();
+    
+    console.log('[Kadi] Groq config check:', { groqConfigured });
 
     const isEnglish = messages.some(m => m.content.toLowerCase().includes('english') || m.content.toLowerCase().includes('hello'));
     const mockResponse = isEnglish
-      ? "Hello! I am Kadi, your DataGN AI assistant. I am currently running in **Offline/Development mode** because your API key is invalid or a demo key.\n\nTo unlock my full analytical capabilities on your datasets, please configure a valid `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` in your environment variables. Let me know if you need help with the setup!"
-      : "Bonjour ! Je suis Kadi, votre assistante IA DataGN. Je fonctionne actuellement en **mode Hors-Ligne (Développement)** car votre clé API est invalide ou de démonstration.\n\nPour débloquer mes capacités d'analyse complètes sur vos tableaux de bord, veuillez configurer une `OPENAI_API_KEY` ou `ANTHROPIC_API_KEY` valide dans vos variables d'environnement. N'hésitez pas si vous avez besoin d'aide pour l'installation !";
+      ? "Hello! I am Kadi, your DataGN AI assistant. I am currently running in **Offline/Development mode** because your Groq API key is not configured.\n\nTo unlock my full analytical capabilities, please configure a valid `GROQ_API_KEY` in your environment variables. Get your FREE API key from https://console.groq.com/"
+      : "Bonjour ! Je suis Kadi, votre assistante IA DataGN. Je fonctionne actuellement en **mode Hors-Ligne (Développement)** car votre clé API Groq n'est pas configurée.\n\nPour débloquer mes capacités d'analyse complètes, veuillez configurer une `GROQ_API_KEY` valide. Obtenez votre clé GRATUITE sur https://console.groq.com/";
 
     // ── Mode Hors-ligne / Simulation (Mock) ───────────────────────
-    // On n'active le mock QUE si AUCUNE clé n'est valide
-    const isAnthropicMock = !anthropicKey || anthropicKey.startsWith('sk-ant-api03-REMPLACEZ');
-    const isOpenAIMock = !openAIKey || openAIKey.startsWith('sk-REMPLACEZ');
-
-    if (isAnthropicMock && isOpenAIMock) {
+    if (!groqConfigured) {
       await new Promise(resolve => setTimeout(resolve, 1500));
       return NextResponse.json({ text: mockResponse }, { status: 200, headers: { ...corsH, 'X-Kadi-Mode': 'Offline-Mock' } });
     }
 
-    // Nettoyage strict pour Anthropic et OpenAI
+    // Nettoyage strict pour Groq
     let valid = messages
       .filter(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
       .map(m => ({
@@ -175,7 +163,7 @@ export async function POST(req: NextRequest) {
         content: m.content.trim().slice(0, 4000)
       }));
 
-    // Fusionner les messages consécutifs du même rôle (requis par Anthropic)
+    // Fusionner les messages consécutifs du même rôle
     const merged: { role: 'user' | 'assistant', content: string }[] = [];
     for (const msg of valid) {
       if (merged.length > 0 && merged[merged.length - 1].role === msg.role) {
@@ -199,139 +187,49 @@ export async function POST(req: NextRequest) {
     const finalSystemPrompt = KADI_SYSTEM + (safeExtra ? '\n\n' + safeExtra : '');
 
     let responseText = '';
-    let lastError = '';
+    let tokensIn = 0;
+    let tokensOut = 0;
 
-    // ── Appel OpenAI ───────────────────────────────
-    if (openAIKey && !openAIKey.startsWith('sk-REMPLACEZ')) {
-      try {
-        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${openAIKey}`,
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o',
-            messages: [
-              { role: 'system', content: finalSystemPrompt },
-              ...valid.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }))
-            ],
-            max_tokens: Math.min(Number(maxTokens) || 800, 1500),
-            temperature: 0.7,
-          }),
-        });
-
-        if (resp.ok) {
-          const json = await resp.json();
-          responseText = json?.choices?.[0]?.message?.content ?? '';
-          console.log('[Kadi] OpenAI Success - Length:', responseText.length);
-        } else {
-          const errText = await resp.text();
-          lastError = `OpenAI ${resp.status}: ${errText.substring(0, 50)}`;
-
-          if (resp.status === 429) {
-            lastError = "Quota OpenAI épuisé. Veuillez vérifier vos crédits.";
-          }
-
-          console.error('[Kadi] OpenAI Error Status:', resp.status, 'Body:', errText.substring(0, 100));
-        }
-      } catch (err: any) {
-        lastError = `OpenAI Fetch Error: ${err.message}`;
-        console.error('[Kadi] OpenAI Network/Fetch Error:', err);
-      }
-    }
-
-    // ── Fallback Anthropic ───────────────
-    if (!responseText && anthropicKey && !anthropicKey.startsWith('sk-ant-api03-REMPLACEZ')) {
-      try {
-        const resp = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': anthropicKey,
-            'anthropic-version': '2023-06-01',
-          },
-          body: JSON.stringify({
-            model: 'claude-3-sonnet-20240229',
-            max_tokens: Math.min(Number(maxTokens) || 800, 1500),
-            system: finalSystemPrompt,
-            messages: valid.map(m => ({
-              role: m.role,
-              content: m.content
-            })),
-          }),
-        });
-
-        if (resp.ok) {
-          const json = await resp.json();
-          responseText = json?.content?.[0]?.text ?? '';
-        } else {
-          const errText = await resp.text();
-          let parsedErr = errText.substring(0, 50);
-          try {
-            const errJson = JSON.parse(errText);
-            if (errJson.error && errJson.error.message) {
-              parsedErr = errJson.error.message;
-            } else if (errJson.error && errJson.error.type) {
-              parsedErr = `Type: ${errJson.error.type}`;
-            }
-          } catch (e) { }
-
-          lastError = `Anthropic ${resp.status}: ${parsedErr}`;
-
-          // Détection spécifique de quota
-          if (resp.status === 429 || resp.status === 400) {
-            lastError = "Quota/Crédits insuffisants sur Anthropic.";
-          }
-
-          console.error('[Kadi] Anthropic error:', resp.status, errText.substring(0, 100));
-        }
-      } catch (err: any) {
-        lastError = `Anthropic Fetch Error: ${err.message}`;
-        console.warn('[Kadi] Anthropic Network Error (Offline mode?)');
-      }
-    }
-
-
-    // ── Fallback final Mock (Maintenu si pas de réponse ou pas de clé) ──
-    if (!responseText) {
-      const errorDetail = lastError ? ` (Détail: ${lastError})` : '';
+    // ── Appel Groq ─────────────────────────────────────────────────
+    try {
+      const result = await groqChat({
+        messages: valid.map(m => ({ role: m.role, content: m.content })),
+        model: GROQ_MODELS.LLAMA_70B,
+        maxTokens: Math.min(Number(maxTokens) || 800, 2000),
+        temperature: 0.7,
+        systemPrompt: finalSystemPrompt,
+      });
+      
+      responseText = result.text;
+      tokensIn = result.tokensIn || 0;
+      tokensOut = result.tokensOut || 0;
+      
+      console.log('[Kadi] Groq Success - Tokens:', { in: tokensIn, out: tokensOut });
+    } catch (err: any) {
+      console.error('[Kadi] Groq Error:', err.message);
+      
+      // Fallback mock response
       return NextResponse.json({
-        text: mockResponse + errorDetail
+        text: mockResponse + `\n\n(Erreur technique: ${err.message})`
       }, {
         status: 200,
-        headers: { ...corsH, 'X-Kadi-Mode': 'Offline-Mock-Fallback' }
+        headers: { ...corsH, 'X-Kadi-Mode': 'Error-Fallback' }
       });
     }
 
-    // ── Persistence DB (Désactivée en V2 car non définie dans le nouveau schéma) ──
-    /*
-    if (dashboardId) {
-      try {
-        const session = await auth();
-        const wsId = (session?.user as any)?.workspaceId;
-        const dbVerify = await prisma.dashboard.findFirst({
-          where: { id: dashboardId, workspaceId: wsId }
-        });
-        if (dbVerify) {
-          const userMsg = messages[messages.length - 1];
-          // Le modèle kadiMessage a été supprimé en V2. 
-          // À remplacer par AIAnalysis ou un nouveau modèle de Chat si nécessaire.
-        }
-      } catch (dbErr) {
-        console.error('[Kadi] DB Save error:', dbErr);
-      }
-    }
-    */
-
     return NextResponse.json(
-      { text: responseText },
+      { 
+        text: responseText,
+        usage: { tokensIn, tokensOut }
+      },
       {
         status: 200,
         headers: {
           ...corsH,
           'X-RateLimit-Remaining': String(rl.remaining),
-          'X-Kadi-Version': '2.0',
+          'X-Kadi-Version': '2.1',
+          'X-Kadi-Provider': 'Groq',
+          'X-Kadi-Model': GROQ_MODELS.LLAMA_70B,
         },
       }
     );

@@ -2,14 +2,19 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
 import { AI_ANALYZE_PROMPT, AI_MAX_TOKENS, AI_MODEL } from "@/lib/ai/prompts";
-import Anthropic from "@anthropic-ai/sdk";
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+import { groqJsonAnalysis, isGroqConfigured } from "@/lib/groq";
 
 export async function POST(req: Request) {
     const session = await auth();
     if (!session?.user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Vérifier que Groq est configuré
+    if (!isGroqConfigured()) {
+        return NextResponse.json({ 
+            error: "Groq API non configurée. Veuillez définir GROQ_API_KEY dans vos variables d'environnement." 
+        }, { status: 503 });
     }
 
     try {
@@ -46,23 +51,14 @@ export async function POST(req: Request) {
             question
         );
 
-        // Appel à Claude avec JSON forcé
-        const response = await anthropic.messages.create({
+        // Appel à Groq avec JSON forcé
+        const result = await groqJsonAnalysis({
+            prompt,
             model: AI_MODEL,
-            max_tokens: AI_MAX_TOKENS,
-            messages: [{ role: "user", content: prompt }],
+            maxTokens: AI_MAX_TOKENS,
         });
 
-        const rawText = (response.content[0] as any)?.text ?? "{}";
-
-        // Parse du JSON (avec fallback si Claude produit du texte autour)
-        let analysisData: object;
-        try {
-            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-            analysisData = JSON.parse(jsonMatch?.[0] ?? "{}");
-        } catch {
-            analysisData = { raw: rawText, parse_error: true };
-        }
+        const analysisData = result.data;
 
         // Persister l'analyse en base
         const aiAnalysis = await prisma.aIAnalysis.create({
@@ -71,8 +67,8 @@ export async function POST(req: Request) {
                 prompt,
                 responseJson: analysisData,
                 model: AI_MODEL,
-                tokensIn: response.usage?.input_tokens,
-                tokensOut: response.usage?.output_tokens,
+                tokensIn: result.tokensIn,
+                tokensOut: result.tokensOut,
             }
         });
 
@@ -92,8 +88,8 @@ export async function POST(req: Request) {
             analysisId: aiAnalysis.id,
             ...analysisData,
             _meta: {
-                tokensIn: response.usage?.input_tokens,
-                tokensOut: response.usage?.output_tokens,
+                tokensIn: result.tokensIn,
+                tokensOut: result.tokensOut,
                 model: AI_MODEL,
             }
         });

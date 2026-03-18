@@ -27,7 +27,7 @@ export const DASHBOARD_TEMPLATES = {
     icon: '💰',
     color: '#10B981',
     description: 'Indicateurs financiers et profitability',
-    layout: 'grid' as const
+    layout: 'grid' as const,
     kpis: [
       { name: 'Revenus Totaux', category: 'Finance', vizType: 'sparkline', color: '#10B981', size: 'large', columnSpan: 2 },
       { name: 'Marge Brute', category: 'Finance', vizType: 'bullet', color: '#22C55E', size: 'medium' },
@@ -44,7 +44,7 @@ export const DASHBOARD_TEMPLATES = {
     icon: '📈',
     color: '#8B5CF6',
     description: 'Campagnes et acquisition',
-    layout: 'grid' as const
+    layout: 'grid' as const,
     kpis: [
       { name: 'Leads Générés', category: 'Marketing', vizType: 'sparkline', color: '#8B5CF6', size: 'medium' },
       { name: 'Coût par Lead', category: 'Marketing', vizType: 'comparison', color: '#EF4444', size: 'medium' },
@@ -60,7 +60,7 @@ export const DASHBOARD_TEMPLATES = {
     icon: '⚙️',
     color: '#F59E0B',
     description: 'Performance opérationnelle',
-    layout: 'grid' as const
+    layout: 'grid' as const,
     kpis: [
       { name: 'Efficacité', category: 'Opérations', vizType: 'gauge', color: '#10B981', size: 'medium' },
       { name: 'Temps de Cycle', category: 'Opérations', vizType: 'bullet', color: '#F59E0B', size: 'medium' },
@@ -76,7 +76,7 @@ export const DASHBOARD_TEMPLATES = {
     icon: '🎧',
     color: '#EC4899',
     description: 'Métriques de support',
-    layout: 'grid' as const
+    layout: 'grid' as const,
     kpis: [
       { name: 'Tickets Ouverts', category: 'Support', vizType: 'sparkline', color: '#3B82F6', size: 'medium' },
       { name: 'Temps de Réponse', category: 'Support', vizType: 'bullet', color: '#10B981', size: 'medium' },
@@ -92,7 +92,7 @@ export const DASHBOARD_TEMPLATES = {
     icon: '🖥️',
     color: '#06B6D4',
     description: 'Surveillance IT',
-    layout: 'flex' as const
+    layout: 'flex' as const,
     kpis: [
       { name: 'Uptime', category: 'IT', vizType: 'gauge', color: '#10B981', size: 'medium' },
       { name: 'Latence', category: 'IT', vizType: 'bullet', color: '#F59E0B', size: 'medium' },

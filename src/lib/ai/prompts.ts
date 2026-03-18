@@ -1,6 +1,11 @@
 // Prompts structurés pour l'IA DataGN — Epic G
-// Claude est forcé à répondre uniquement en JSON valide
+// Groq avec LLaMA est forcé à répondre uniquement en JSON valide
 // conformément aux guardrails définis ici.
+
+import { GROQ_MODELS } from '../groq';
+
+export const AI_MODEL = GROQ_MODELS.LLAMA_70B;
+export const AI_MAX_TOKENS = 2000;
 
 export const AI_ANALYZE_PROMPT = (
     schema: any[],
@@ -54,6 +59,3 @@ ${question || "Effectue une analyse générale exploratoire de ce dataset."}
     }
   ]
 }`;
-
-export const AI_MAX_TOKENS = 2000;
-export const AI_MODEL = "claude-3-5-haiku-latest";

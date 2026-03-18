@@ -2,7 +2,7 @@ import { Worker, Job } from "bullmq";
 import prisma from "@/lib/db";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DataGNJobPayload, redisConnection } from "./queue";
-import Anthropic from "@anthropic-ai/sdk";
+import { groqJsonAnalysis, isGroqConfigured, GROQ_MODELS } from "@/lib/groq";
 
 const s3 = new S3Client({
     region: process.env.S3_REGION || "us-east-1",
@@ -13,8 +13,6 @@ const s3 = new S3Client({
         secretAccessKey: process.env.S3_SECRET_KEY || "minioadmin",
     },
 });
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // --- Worker unique qui gère tous les types de jobs ---
 export const dataGNWorker = new Worker<DataGNJobPayload>(
@@ -134,10 +132,15 @@ async function runProfileDataset(data: DataGNJobPayload) {
     return { rowCount, columnCount, columnsProfiled: schemaJson.length };
 }
 
-// --- Logique AI_ANALYZE ---
+// --- Logique AI_ANALYZE (avec Groq) ---
 async function runAIAnalyze(data: DataGNJobPayload) {
     const { datasetVersionId, question } = data;
     if (!datasetVersionId) throw new Error("No datasetVersionId");
+
+    // Vérifier que Groq est configuré
+    if (!isGroqConfigured()) {
+        throw new Error("Groq API non configurée. Veuillez définir GROQ_API_KEY.");
+    }
 
     const version = await prisma.datasetVersion.findUniqueOrThrow({
         where: { id: datasetVersionId },
@@ -161,21 +164,13 @@ Réponds en JSON avec ce format exact:
   ]
 }`;
 
-    const response = await anthropic.messages.create({
-        model: "claude-3-5-haiku-latest",
-        max_tokens: 1500,
-        messages: [{ role: "user", content: prompt }],
+    const result = await groqJsonAnalysis({
+        prompt,
+        model: GROQ_MODELS.LLAMA_70B,
+        maxTokens: 1500,
     });
 
-    const modelOutput = (response.content[0] as any)?.text ?? "{}";
-    let responseJson: object;
-
-    try {
-        const jsonMatch = modelOutput.match(/\{[\s\S]*\}/);
-        responseJson = JSON.parse(jsonMatch?.[0] ?? "{}");
-    } catch {
-        responseJson = { raw: modelOutput };
-    }
+    const responseJson = result.data;
 
     // Stocker l'analyse en base
     await prisma.aIAnalysis.create({
@@ -183,9 +178,9 @@ Réponds en JSON avec ce format exact:
             datasetVersionId,
             prompt,
             responseJson,
-            model: "claude-3-5-haiku-latest",
-            tokensIn: response.usage?.input_tokens,
-            tokensOut: response.usage?.output_tokens,
+            model: GROQ_MODELS.LLAMA_70B,
+            tokensIn: result.tokensIn,
+            tokensOut: result.tokensOut,
         },
     });
 
